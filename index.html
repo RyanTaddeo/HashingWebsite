@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hashing Algorithm Data Viewer</title>
+    <title>Crypto-Hash Simulation Dashboard</title>
     <style>
         :root {
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --accent: #2563eb;
-            --accent-hover: #1d4ed8;
-            --code-bg: #f3f4f6;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent: #38bdf8;
+            --success-bg: rgba(22, 101, 52, 0.3);
+            --success-text: #4ade80;
+            --danger-bg: rgba(153, 27, 27, 0.3);
+            --danger-text: #f87171;
+            --code-bg: #0f172a;
         }
 
         * {
@@ -27,70 +30,113 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.6;
-            padding: 2rem 1rem;
+            padding: 2.5rem 1rem;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         header {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
         }
 
         h1 {
-            font-size: 1.75rem;
-            margin-bottom: 0.25rem;
+            font-size: 1.85rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: #f1f5f9;
         }
 
         .subtitle {
             color: var(--text-muted);
             font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Metric Summary Cards Layout */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
         .controls {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             flex-wrap: wrap;
         }
 
         input[type="text"], select {
-            padding: 0.6rem 0.9rem;
+            padding: 0.65rem 1rem;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.95rem;
             background: var(--card-bg);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
         }
 
         input[type="text"] {
             flex: 1;
-            min-width: 240px;
+            min-width: 260px;
         }
 
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            white-space: nowrap;
         }
 
         th, td {
-            padding: 0.85rem 1rem;
+            padding: 1rem 1.25rem;
             border-bottom: 1px solid var(--border-color);
             font-size: 0.9rem;
         }
 
         th {
-            background-color: #f9fafb;
+            background-color: rgba(15, 23, 42, 0.6);
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -103,47 +149,42 @@
         }
 
         tr:hover {
-            background-color: #f9fafb;
+            background-color: rgba(51, 65, 85, 0.3);
         }
 
-        .hash-cell {
+        .code-pill {
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
             background-color: var(--code-bg);
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-size: 0.85rem;
-            word-break: break-all;
-            display: inline-block;
+            border: 1px solid var(--border-color);
         }
 
         .badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
             font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 999px;
-            background-color: #dbeafe;
-            color: #1e40af;
+            font-weight: 700;
+            border-radius: 9999px;
+            letter-spacing: 0.025em;
         }
 
-        button.copy-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            color: var(--text-main);
-            transition: all 0.15s ease;
+        .badge-passed {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+            border: 1px solid rgba(74, 222, 128, 0.3);
         }
 
-        button.copy-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+        .badge-failed {
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
+            border: 1px solid rgba(248, 113, 113, 0.3);
         }
 
         .status-bar {
-            margin-top: 0.75rem;
+            margin-top: 1rem;
             font-size: 0.85rem;
             color: var(--text-muted);
             display: flex;
@@ -155,14 +196,32 @@
 
 <div class="container">
     <header>
-        <h1>Hash Output Registry</h1>
-        <p class="subtitle">Structured view of inputs and generated cryptographic digests</p>
+        <h1>Cryptographic Hash & Interception Audit</h1>
+        <p class="subtitle">Live telemetry from C++ simulation session (ASCII Square Mod 1066 Scheme)</p>
     </header>
 
+    <!-- Top Summary Metrics Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-title">Total Logs</div>
+            <div class="metric-value" id="metricTotal">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Authentication Passed</div>
+            <div class="metric-value" id="metricPassed" style="color: var(--success-text);">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Tampering / Failed</div>
+            <div class="metric-value" id="metricFailed" style="color: var(--danger-text);">0</div>
+        </div>
+    </div>
+
     <div class="controls">
-        <input type="text" id="searchInput" placeholder="Search by input, hash, or notes...">
-        <select id="algoFilter">
-            <option value="ALL">All Algorithms</option>
+        <input type="text" id="searchInput" placeholder="Search message body, hash value, or key...">
+        <select id="statusFilter">
+            <option value="ALL">All Statuses</option>
+            <option value="PASSED">Passed Only</option>
+            <option value="FAILED">Failed Only</option>
         </select>
     </div>
 
@@ -170,49 +229,37 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Input Data</th>
+                    <th>User ID</th>
+                    <th>Private Key</th>
+                    <th>Message Body</th>
                     <th>Algorithm</th>
                     <th>Hash Digest</th>
+                    <th>Auth Status</th>
                     <th>Timestamp</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- Rows populated via JavaScript -->
+                <!-- Populated via JavaScript -->
             </tbody>
         </table>
     </div>
 
     <div class="status-bar">
         <span id="rowCount">Loading records...</span>
-        <span id="dataSource">Source: Initializing</span>
+        <span id="dataSource">Source: Initializing...</span>
     </div>
 </div>
 
 <script>
-    // Fallback data used if 'hashes.json' is not yet uploaded to your GitHub repo
     const fallbackData = [
         {
-            id: 1,
-            input: "hello_world",
-            algorithm: "SHA-256",
-            hash: "35454b055cc325ea1af2126e27707052c0f63478d623a0c22d71e9eb9c9a6868",
-            timestamp: "2026-11-18 14:10:00"
-        },
-        {
-            id: 2,
-            input: "config_v2.tar.gz",
-            algorithm: "SHA-512",
-            hash: "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
-            timestamp: "2026-11-18 14:12:30"
-        },
-        {
             id: 3,
-            input: "user_session_9941",
-            algorithm: "MD5",
-            hash: "8b1a9953c4611296a827abf8c47804d7",
-            timestamp: "2026-11-18 14:15:12"
+            input: "Secret transmission test alpha",
+            privateKey: "4321",
+            algorithm: "ASCII-Square (Mod 1066)",
+            hash: 742,
+            status: "PASSED",
+            timestamp: "2026-11-18 16:15:00"
         }
     ];
 
@@ -221,30 +268,25 @@
     async function loadData() {
         const sourceLabel = document.getElementById('dataSource');
         try {
-            // Attempts to fetch external data file from the same GitHub folder
             const response = await fetch('./hashes.json');
-            if (!response.ok) throw new Error('No external file found');
+            if (!response.ok) throw new Error('File not found');
             allRecords = await response.json();
-            sourceLabel.textContent = "Source: hashes.json";
+            sourceLabel.textContent = "Source: Live hashes.json from C++ run";
         } catch (error) {
-            // Falls back to sample data so the page still renders cleanly
             allRecords = fallbackData;
-            sourceLabel.textContent = "Source: Built-in Sample Data (Upload hashes.json to override)";
+            sourceLabel.textContent = "Source: Sample Data (Run C++ program and upload hashes.json to override)";
         }
 
-        populateFilterDropdown(allRecords);
+        updateMetrics(allRecords);
         renderTable(allRecords);
     }
 
-    function populateFilterDropdown(data) {
-        const algoFilter = document.getElementById('algoFilter');
-        const algorithms = [...new Set(data.map(item => item.algorithm))];
-        algorithms.forEach(algo => {
-            const option = document.createElement('option');
-            option.value = algo;
-            option.textContent = algo;
-            algoFilter.appendChild(option);
-        });
+    function updateMetrics(data) {
+        document.getElementById('metricTotal').textContent = data.length;
+        const passedCount = data.filter(item => item.status === "PASSED").length;
+        const failedCount = data.filter(item => item.status === "FAILED").length;
+        document.getElementById('metricPassed').textContent = passedCount;
+        document.getElementById('metricFailed').textContent = failedCount;
     }
 
     function renderTable(data) {
@@ -253,20 +295,24 @@
         tbody.innerHTML = '';
 
         if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#6b7280;">No matching records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding: 2rem;">No matching session logs found.</td></tr>`;
             rowCount.textContent = "Showing 0 records";
             return;
         }
 
         data.forEach(item => {
+            const isPassed = item.status === "PASSED";
+            const badgeClass = isPassed ? "badge-passed" : "badge-failed";
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>#${item.id}</td>
-                <td><strong>${escapeHTML(String(item.input))}</strong></td>
-                <td><span class="badge">${escapeHTML(item.algorithm)}</span></td>
-                <td><span class="hash-cell">${escapeHTML(item.hash)}</span></td>
-                <td style="color: #6b7280; white-space: nowrap;">${escapeHTML(item.timestamp || 'N/A')}</td>
-                <td><button class="copy-btn" onclick="copyHash('${escapeHTML(item.hash)}', this)">Copy</button></td>
+                <td><strong>#${item.id}</strong></td>
+                <td><span class="code-pill">${escapeHTML(String(item.privateKey))}</span></td>
+                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;" title="${escapeHTML(String(item.input))}">${escapeHTML(String(item.input))}</td>
+                <td style="color: var(--text-muted);">${escapeHTML(item.algorithm)}</td>
+                <td><span class="code-pill" style="color: var(--accent); font-weight: bold;">${item.hash}</span></td>
+                <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                <td style="color: var(--text-muted);">${escapeHTML(item.timestamp || 'N/A')}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -276,25 +322,19 @@
 
     function filterData() {
         const query = document.getElementById('searchInput').value.toLowerCase();
-        const selectedAlgo = document.getElementById('algoFilter').value;
+        const selectedStatus = document.getElementById('statusFilter').value;
 
         const filtered = allRecords.filter(item => {
-            const matchesAlgo = selectedAlgo === 'ALL' || item.algorithm === selectedAlgo;
+            const matchesStatus = selectedStatus === 'ALL' || item.status === selectedStatus;
             const matchesText = 
                 String(item.input).toLowerCase().includes(query) ||
-                item.hash.toLowerCase().includes(query) ||
+                String(item.hash).includes(query) ||
+                String(item.privateKey).toLowerCase().includes(query) ||
                 String(item.id).includes(query);
-            return matchesAlgo && matchesText;
+            return matchesStatus && matchesText;
         });
 
         renderTable(filtered);
-    }
-
-    function copyHash(hashText, btn) {
-        navigator.clipboard.writeText(hashText);
-        const originalText = btn.textContent;
-        btn.textContent = "Copied!";
-        setTimeout(() => btn.textContent = originalText, 1500);
     }
 
     function escapeHTML(str) {
@@ -308,7 +348,7 @@
     }
 
     document.getElementById('searchInput').addEventListener('input', filterData);
-    document.getElementById('algoFilter').addEventListener('change', filterData);
+    document.getElementById('statusFilter').addEventListener('change', filterData);
 
     loadData();
 </script>
