@@ -20,9 +20,9 @@ class Message {
     public:
         void setPlaintext(string newPlaintext); 
         void setId(int newID);
-        string getBody();
-        int getHash();
-        int getId();
+        string getBody() const;
+        int getHash() const;
+        int getId() const;
         Message(string plaintext, int publicKey, string privateKey);
 };
 
