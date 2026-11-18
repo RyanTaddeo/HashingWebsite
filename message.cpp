@@ -12,13 +12,13 @@ void Message::setPlaintext(string newPlaintext){
 void  Message::setId(int newID){
     publicID=newID;
 }
-string  Message::getBody(){
+string  Message::getBody() const {
     return body;
 }
-int  Message::getHash(){
+int  Message::getHash() const {
     return hash;
 }
-int  Message::getId(){
+int  Message::getId() const {
     return publicID;
 }
  Message::Message(string plaintext, int publicKey, string privateKey){
