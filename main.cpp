@@ -1,5 +1,8 @@
 //OPENING COMMENT
-
+#include <fstream>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include "hash.h"
 #include "message.h"
 #include <iostream>
@@ -13,6 +16,38 @@ Message user(int id);
 Message adversay(Message input);
 void reciever(Message input);
 
+void exportToJson(const Message& msg, int hashValue, const string& privateKey, const string& status) {
+    time_t now = time(0);
+    tm* ltm = localtime(&now);
+    stringstream ss;
+    ss << 1900 + ltm->tm_year << "-"
+       << setw(2) << setfill('0') << 1 + ltm->tm_mon << "-"
+       << setw(2) << setfill('0') << ltm->tm_mday << " "
+       << setw(2) << setfill('0') << ltm->tm_hour << ":"
+       << setw(2) << setfill('0') << ltm->tm_min << ":"
+       << setw(2) << setfill('0') << ltm->tm_sec;
+    string timestamp = ss.str();
+
+    // Writes data into hashes.json in the local directory
+    ofstream outFile("hashes.json");
+    if (outFile.is_open()) {
+        outFile << "[\n";
+        outFile << "  {\n";
+        outFile << "    \"id\": " << msg.getId() << ",\n";
+        outFile << "    \"input\": \"" << msg.getBody() << "\",\n";
+        outFile << "    \"privateKey\": \"" << privateKey << "\",\n";
+        outFile << "    \"algorithm\": \"ASCII-Square (Mod 1066)\",\n";
+        outFile << "    \"hash\": " << hashValue << ",\n";
+        outFile << "    \"status\": \"" << status << "\",\n";
+        outFile << "    \"timestamp\": \"" << timestamp << "\"\n";
+        outFile << "  }\n";
+        outFile << "]\n";
+        outFile.close();
+        cout << "\n[System] Telemetry exported to hashes.json successfully." << endl;
+    } else {
+        cerr << "[Error] Could not open hashes.json for writing." << endl;
+    }
+}
 
 int main(){
 
@@ -130,6 +165,7 @@ void reciever(Message input){
 
     if (input.getHash()!=verify){
         cout<<"MESSAGE DID NOT PASS AUTHENTICATION! CONTENTS DISCARDED!"<<endl;
+        exportToJson(input, verify, key(input.getId()), "FAILED");
         return;
     }
 
@@ -137,4 +173,6 @@ void reciever(Message input){
     cout<<"MESSAGE BODY: "<< input.getBody()<<endl;
     cout<<"CORESPONDING HASH: "<< input.getHash()<<endl;
     cout<<"SENDER ID: "<< input.getId()<<endl;
+
+    exportToJson(input, input.getHash(), key(input.getId()), "PASSED");
 }
