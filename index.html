@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashing Algorithm Data Viewer</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --code-bg: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], select {
+            padding: 0.6rem 0.9rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: var(--card-bg);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .hash-cell {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            background-color: var(--code-bg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            word-break: break-all;
+            display: inline-block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 999px;
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        button.copy-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            transition: all 0.15s ease;
+        }
+
+        button.copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .status-bar {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Hash Output Registry</h1>
+        <p class="subtitle">Structured view of inputs and generated cryptographic digests</p>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search by input, hash, or notes...">
+        <select id="algoFilter">
+            <option value="ALL">All Algorithms</option>
+        </select>
+    </div>
+
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Input Data</th>
+                    <th>Algorithm</th>
+                    <th>Hash Digest</th>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Rows populated via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="status-bar">
+        <span id="rowCount">Loading records...</span>
+        <span id="dataSource">Source: Initializing</span>
+    </div>
+</div>
+
+<script>
+    // Fallback data used if 'hashes.json' is not yet uploaded to your GitHub repo
+    const fallbackData = [
+        {
+            id: 1,
+            input: "hello_world",
+            algorithm: "SHA-256",
+            hash: "35454b055cc325ea1af2126e27707052c0f63478d623a0c22d71e9eb9c9a6868",
+            timestamp: "2026-11-18 14:10:00"
+        },
+        {
+            id: 2,
+            input: "config_v2.tar.gz",
+            algorithm: "SHA-512",
+            hash: "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+            timestamp: "2026-11-18 14:12:30"
+        },
+        {
+            id: 3,
+            input: "user_session_9941",
+            algorithm: "MD5",
+            hash: "8b1a9953c4611296a827abf8c47804d7",
+            timestamp: "2026-11-18 14:15:12"
+        }
+    ];
+
+    let allRecords = [];
+
+    async function loadData() {
+        const sourceLabel = document.getElementById('dataSource');
+        try {
+            // Attempts to fetch external data file from the same GitHub folder
+            const response = await fetch('./hashes.json');
+            if (!response.ok) throw new Error('No external file found');
+            allRecords = await response.json();
+            sourceLabel.textContent = "Source: hashes.json";
+        } catch (error) {
+            // Falls back to sample data so the page still renders cleanly
+            allRecords = fallbackData;
+            sourceLabel.textContent = "Source: Built-in Sample Data (Upload hashes.json to override)";
+        }
+
+        populateFilterDropdown(allRecords);
+        renderTable(allRecords);
+    }
+
+    function populateFilterDropdown(data) {
+        const algoFilter = document.getElementById('algoFilter');
+        const algorithms = [...new Set(data.map(item => item.algorithm))];
+        algorithms.forEach(algo => {
+            const option = document.createElement('option');
+            option.value = algo;
+            option.textContent = algo;
+            algoFilter.appendChild(option);
+        });
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        const rowCount = document.getElementById('rowCount');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#6b7280;">No matching records found.</td></tr>`;
+            rowCount.textContent = "Showing 0 records";
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>#${item.id}</td>
+                <td><strong>${escapeHTML(String(item.input))}</strong></td>
+                <td><span class="badge">${escapeHTML(item.algorithm)}</span></td>
+                <td><span class="hash-cell">${escapeHTML(item.hash)}</span></td>
+                <td style="color: #6b7280; white-space: nowrap;">${escapeHTML(item.timestamp || 'N/A')}</td>
+                <td><button class="copy-btn" onclick="copyHash('${escapeHTML(item.hash)}', this)">Copy</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        rowCount.textContent = `Showing ${data.length} of ${allRecords.length} records`;
+    }
+
+    function filterData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const selectedAlgo = document.getElementById('algoFilter').value;
+
+        const filtered = allRecords.filter(item => {
+            const matchesAlgo = selectedAlgo === 'ALL' || item.algorithm === selectedAlgo;
+            const matchesText = 
+                String(item.input).toLowerCase().includes(query) ||
+                item.hash.toLowerCase().includes(query) ||
+                String(item.id).includes(query);
+            return matchesAlgo && matchesText;
+        });
+
+        renderTable(filtered);
+    }
+
+    function copyHash(hashText, btn) {
+        navigator.clipboard.writeText(hashText);
+        const originalText = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = originalText, 1500);
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag]));
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterData);
+    document.getElementById('algoFilter').addEventListener('change', filterData);
+
+    loadData();
+</script>
+
+</body>
+</html>
